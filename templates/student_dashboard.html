@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Smart Attendance</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* Top Header Navigation Strip */
+        .header-bar {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header-bar h1 { margin: 0; font-size: 24px; }
+        
+        .logout-btn {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Two-Column Responsive Grid Workspace Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+
+        /* Clean Data Table Layout styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        th { background-color: #f8f9fa; color: #34495e; }
+
+        /* Conditional Status Badges colors */
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .bg-present { background-color: #d4edda; color: #155724; }
+        .bg-absent { background-color: #f8d7da; color: #721c24; }
+        .bg-pending { background-color: #fff3cd; color: #856404; }
+        .bg-approved { background-color: #d4edda; color: #155724; }
+
+        /* Input Controls inside application module */
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .btn-submit {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <!-- Header Banner Block -->
+        <div class="header-bar">
+            <div>
+                <h1>Smart Attendance Assistant</h1>
+                <span>Welcome, <strong>{{ student.name }}</strong> (ID: {{ student.id }})</span>
+            </div>
+            <a href="/" class="logout-btn">Logout</a>
+        </div>
+
+        <div class="main-grid">
+            
+            <!-- Left Workspace: Performance Analytics Tables -->
+            <div class="left-column">
+                
+                <!-- Period-by-Period Attendance Table View -->
+                <div class="card">
+                    <h3>📅 Period-by-Period Attendance Tracking</h3>
+                    {% if attendance %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Period/Hour</th>
+                                <th>Status</th>
+                                <th>Marked By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in attendance %}
+                            <tr>
+                                <td>{{ record.date }}</td>
+                                <td>Period {{ record.period }}</td>
+                                <td>
+                                    <span class="badge {% if record.status == 'Present' %}bg-present{% else %}bg-absent{% endif %}">
+                                        {{ record.status }}
+                                    </span>
+                                </td>
+                                <td>{{ record.marked_by }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p style="color: #7f8c8d; margin-top: 15px;">No attendance entries logged for your account yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Leave Letter and OD Tracking History Table -->
+                <div class="card">
+                    <h3>📑 Leave Letter & On-Duty (OD) Request Status</h3>
+                    {% if leaves %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Reason / Explanation</th>
+                                <th>Current Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for request in leaves %}
+                            <tr>
+                                <td><strong>{{ request.type }}</strong></td>
+                                <td>{{ request.reason }}</td>
+                                <td>
+                                    <span class="badge {% if request.status == 'Pending' %}bg-pending{% elif request.status == 'Approved' %}bg-approved{% else %}bg-absent{% endif %}">
+                                        {{ request.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <p style="color: #7f8c8d; margin-top: 15px;">No dynamic leave letters or OD files compiled yet.</p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Right Workspace: Request Management Submission Forms -->
+            <div class="right-column">
+                
+                <div class="card">
+                    <h3>✉️ Apply for Leave / OD</h3>
+                    <!-- Placeholder route destination targeting request processors later -->
+                    <form action="/request/submit" method="POST">
+                        <label style="font-weight:600; display:block; margin-bottom:5px;">Application Type</label>
+                        <select name="request_type" class="form-control" required>
+                            <option value="Leave Letter">Leave Letter</option>
+                            <option value="OD">On-Duty (OD) Certification</option>
+                        </select>
+
+                        <label style="font-weight:600; display:block; margin-bottom:5px;">Reason / Duration Details</label>
+                        <textarea name="reason" rows="4" class="form-control" placeholder="Provide accurate date ranges and formal documentation notes..." required></textarea>
+
+                        <button type="submit" class="btn-submit">Submit Application</button>
+                    </form>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>
